@@ -2,30 +2,30 @@
   <div class="home">
     <img class="app-logo" alt="busLogo" src="../assets/logo.png" />
     <HeaderBar title="Bus Dashboard" />
+    <div class="bus-functions">
+      <input v-model="stopShortCodeInput" placeholder="Give a stop shortcode. (e.g. 2508)" />
+      <button @click="fetchStopMonitoringDataSet">Fetch Data</button>
+    </div>
     <div class="bus-container">
       <div v-for="item in busDataSet" :key="item.vehicleRef" class="bus-item">
         <div>Bussin id: {{ item.vehicleRef }}</div>
         <div>Bussin linja: {{ item.lineRef }}</div>
-        <div>
-          Arvioitu lähtö pysäkille: {{ item.call.expectedDepartureTime }}
-        </div>
-        <div>
-          Aikataulun mukainen saapuminen: {{ item.call.aimedDepartureTime }}
-        </div>
+        <div>Arvioitu lähtö pysäkille: {{ item.call.expectedDepartureTime }}</div>
+        <div>Aikataulun mukainen saapuminen: {{ item.call.aimedDepartureTime }}</div>
         <div>Status: {{ item.call.departureStatus }}</div>
       </div>
     </div>
-    <input v-model="stopShortCodeInput" class="stop-input" />
-    <button @click="fetchStopMonitoringDataSet" class="button">
-      Fetch Data
-    </button>
-    <button @click="fetchStopListingDataSet" class="button">
-      Fetch all stops
-    </button>
+
+    <div class="stop-functions">
+      <input v-model="tariffZoneInput" placeholder="Give a tariff-zone (e.g A)" />
+      <button @click="fetchStopListingDataSet">Fetch all stops</button>
+    </div>
     <div class="stop-container">
-      <div v-for="item in stopDataSet" :key="item.shortName" class="stop-item">
-        Pysäkin lyhytkoodi: {{ item.shortName }} Pysäkin nimi: {{ item.name }}
-      </div>
+      <div
+        v-for="item in stopDataSet"
+        :key="item.shortName"
+        class="stop-item"
+      >Pysäkin lyhytkoodi: {{ item.shortName }} Pysäkin nimi: {{ item.name }}</div>
     </div>
   </div>
 </template>
@@ -43,7 +43,8 @@ export default {
     return {
       busDataSet: [],
       stopDataSet: [],
-      stopShortCodeInput: ""
+      stopShortCodeInput: "",
+      tariffZoneInput: ""
     };
   },
   methods: {
@@ -59,7 +60,7 @@ export default {
         });
     },
     fetchStopListingDataSet: function() {
-      const tariffZoneInput = "A";
+      const tariffZoneInput = this.tariffZoneInput;
       const baseURI = "http://data.itsfactory.fi/journeys/api/1/stop-points";
       this.$http
         .get(baseURI, { params: { tariffZone: tariffZoneInput } })
@@ -75,22 +76,21 @@ export default {
 @import "../styles/variables.scss";
 .home {
   margin: 0;
-}
-.app-logo {
-  width: 150px;
-}
-
-.stop-input {
-  margin: 10px;
-  padding: 10px;
-  font-size: 15px;
-}
-.button {
-  background-color: $primary-color;
-  padding: 10px;
-  border-radius: 4px;
-  margin-top: 20px;
-  font-size: 20px;
+  .app-logo {
+    width: 150px;
+  }
+  button {
+    background-color: $primary-color;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 20px;
+  }
+  input {
+    margin: 10px;
+    padding: 10px;
+    font-size: 15px;
+    width: 300px;
+  }
 }
 
 .bus-container {
@@ -104,20 +104,17 @@ export default {
     border-radius: 8px;
   }
 }
-
 .stop-container {
   display: flex;
-  flex-flow: column nowrap;
+  flex-flow: row wrap;
   justify-content: center;
   align-items: center;
-  padding-top: 20px;
-  margin-top: 50px;
   background-color: rgb(200, 211, 207);
   .stop-item {
     background-color: rgb(231, 243, 118);
     width: 500px;
     padding: 5px;
-    margin: 5px 0 5px 0;
+    margin: 5px;
     text-align: center;
   }
 }
