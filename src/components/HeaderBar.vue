@@ -22,7 +22,7 @@ export default {
   justify-content: center;
   align-items: center;
   background-color: $primary-color;
-  width: 100%;
-  height: 50px;
+  height: 60px;
+  margin: 0 auto;
 }
 </style>

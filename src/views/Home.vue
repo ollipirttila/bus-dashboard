@@ -3,29 +3,50 @@
     <img class="app-logo" alt="busLogo" src="../assets/logo.png" />
     <HeaderBar title="Bus Dashboard" />
     <div class="bus-functions">
-      <input v-model="stopShortCodeInput" placeholder="Give a stop shortcode. (e.g. 2508)" />
-      <button @click="fetchStopMonitoringDataSet">Fetch Data</button>
+      <div v-if="selectedStop" class="selected-stop">
+        Selected stop: {{ selectedStop.name }} - {{ selectedStop.shortName }}
+        <div class="remove-stop-icon" @click="selectStop()">
+          <i class="fas fa-times fa-lg" />
+        </div>
+      </div>
     </div>
     <div class="bus-container">
       <div v-for="item in busDataSet" :key="item.vehicleRef" class="bus-item">
-        <div>Bussin id: {{ item.vehicleRef }}</div>
-        <div>Bussin linja: {{ item.lineRef }}</div>
-        <div>Arvioitu lähtö pysäkille: {{ item.call.expectedDepartureTime }}</div>
-        <div>Aikataulun mukainen saapuminen: {{ item.call.aimedDepartureTime }}</div>
+        <div class="bus-line">
+          {{ item.lineRef }} {{ getStopName(item.destinationShortName) }}
+        </div>
+        <div>
+          Expected Departure Time:
+          {{ getFormattedTime(item.call.expectedDepartureTime) }}
+        </div>
+        <div>
+          Aimed Departure Time:
+          {{ getFormattedTime(item.call.aimedDepartureTime) }}
+        </div>
         <div>Status: {{ item.call.departureStatus }}</div>
       </div>
     </div>
 
-    <div class="stop-functions">
-      <input v-model="tariffZoneInput" placeholder="Give a tariff-zone (e.g A)" />
-      <button @click="fetchStopListingDataSet">Fetch all stops</button>
+    <div v-if="!selectedStop" class="search-functions">
+      <div class="search-title">Search for your bus stop</div>
+      <input
+        class="search-input"
+        v-model="searchPhrase"
+        @input="searchStop"
+        @keyup.delete="clearResults"
+        placeholder="Type a bus stop name"
+      />
     </div>
-    <div class="stop-container">
+    <div v-if="searchPhrase" class="stop-container">
       <div
-        v-for="item in stopDataSet"
+        v-for="item in searchResults"
         :key="item.shortName"
         class="stop-item"
-      >Pysäkin lyhytkoodi: {{ item.shortName }} Pysäkin nimi: {{ item.name }}</div>
+        @click="selectStop(item)"
+      >
+        <div class="stop-name">{{ item.name }}</div>
+        <div class="stop-shortname">{{ item.shortName }}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -33,6 +54,7 @@
 <script>
 // @ is an alias to /src
 import HeaderBar from "@/components/HeaderBar.vue";
+import { dateTimeMixin } from "@/mixins/dateTime.js";
 
 export default {
   name: "Home",
@@ -41,12 +63,18 @@ export default {
   },
   data() {
     return {
-      busDataSet: [],
+      busDataSet: null,
       stopDataSet: [],
       stopShortCodeInput: "",
-      tariffZoneInput: ""
+      searchPhrase: null,
+      searchResults: "",
+      selectedStop: null
     };
   },
+  mounted: function() {
+    this.fetchStopListingDataSet();
+  },
+  mixins: [dateTimeMixin],
   methods: {
     fetchStopMonitoringDataSet: function() {
       const stopShortCode = this.stopShortCodeInput;
@@ -59,15 +87,40 @@ export default {
           console.log(result.data.body[stopShortCode]);
         });
     },
+
     fetchStopListingDataSet: function() {
-      const tariffZoneInput = this.tariffZoneInput;
       const baseURI = "http://data.itsfactory.fi/journeys/api/1/stop-points";
-      this.$http
-        .get(baseURI, { params: { tariffZone: tariffZoneInput } })
-        .then(result => {
-          this.stopDataSet = result.data.body;
-          console.log(result.data.body);
-        });
+      this.$http.get(baseURI).then(result => {
+        this.stopDataSet = result.data.body;
+        console.log(result.data.body);
+      });
+    },
+
+    searchStop: function() {
+      this.searchResults = this.stopDataSet.filter(
+        item =>
+          item.name.toLowerCase().search(this.searchPhrase.toLowerCase()) !== -1
+      );
+      console.log(this.searchResults);
+    },
+    clearResults: function() {
+      this.searchResults = null;
+    },
+    selectStop: function(stopItem) {
+      if (stopItem) {
+        this.stopShortCodeInput = stopItem.shortName;
+        this.selectedStop = stopItem;
+        this.fetchStopMonitoringDataSet();
+        this.clearResults;
+        this.searchPhrase = null;
+      } else {
+        this.selectedStop = null;
+        this.busDataSet = null;
+      }
+    },
+    getStopName(shortName) {
+      let stop = this.stopDataSet.filter(item => item.shortName == shortName);
+      return stop[0].name;
     }
   }
 };
@@ -75,15 +128,20 @@ export default {
 <style lang="scss" scoped>
 @import "../styles/variables.scss";
 .home {
-  margin: 0;
   .app-logo {
     width: 150px;
+    padding-bottom: 20px;
   }
   button {
     background-color: $primary-color;
     padding: 10px;
     border-radius: 4px;
     font-size: 20px;
+    cursor: pointer;
+    &:hover {
+      background-color: rgb(28, 151, 38);
+      color: white;
+    }
   }
   input {
     margin: 10px;
@@ -92,15 +150,69 @@ export default {
     width: 300px;
   }
 }
-
+.bus-functions {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  .selected-stop {
+    position: relative;
+    background-color: rgb(12, 78, 138);
+    color: white;
+    font-weight: 700;
+    width: 30%;
+    padding: 10px;
+    margin: 15px;
+    border-radius: 8px;
+    .remove-stop-icon {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: $primary-color;
+      color: black;
+      &:hover {
+        background-color: rgb(21, 85, 24);
+        color: white;
+      }
+    }
+  }
+}
 .bus-container {
   display: flex;
+  flex-flow: row wrap;
   justify-content: center;
   padding: 0 50px;
   .bus-item {
     background-color: $primary-color;
-    padding: 30px;
+    padding: 20px;
     margin: 10px;
+    border-radius: 8px;
+    .bus-line {
+      background-color: rgb(61, 59, 59);
+      color: rgb(255, 168, 6);
+      font-size: 1.5em;
+      border-radius: 8px;
+      width: 100%;
+      margin: 0 0 10px 0;
+    }
+  }
+}
+.search-functions {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  .search-title {
+    padding-top: 10px;
+    font-size: 1.2em;
+  }
+  .search-input {
+    text-align: center;
+    border: 1px solid rgb(214, 214, 214);
     border-radius: 8px;
   }
 }
@@ -116,6 +228,10 @@ export default {
     padding: 5px;
     margin: 5px;
     text-align: center;
+    &:hover {
+      background-color: rgb(179, 192, 65);
+      cursor: pointer;
+    }
   }
 }
 </style>
