@@ -16,11 +16,19 @@
           {{ item.lineRef }} {{ getStopName(item.destinationShortName) }}
         </div>
         <div>
-          Expected Departure Time:
+          Leaving from stop:
           {{ getFormattedTime(item.call.expectedDepartureTime) }}
         </div>
         <div>
-          Aimed Departure Time:
+          {{
+            differenceFromScheduledDeparture(
+              item.call.expectedDepartureTime,
+              item.call.aimedDepartureTime
+            )
+          }}
+        </div>
+        <div>
+          Scheduled departure:
           {{ getFormattedTime(item.call.aimedDepartureTime) }}
         </div>
         <div>Status: {{ item.call.departureStatus }}</div>
@@ -86,6 +94,19 @@ export default {
           this.busDataSet = result.data.body[stopShortCode];
           console.log(result.data.body[stopShortCode]);
         });
+    },
+    differenceFromScheduledDeparture: function(expectedTime, scheduledTime) {
+      const timeDifference = this.getDifferenceInTime(
+        expectedTime,
+        scheduledTime
+      );
+      const minuteStr = Math.abs(timeDifference) > 1 ? " minutes" : " minute";
+      const delayType =
+        timeDifference > 0 ? " behind schedule" : " ahead of schedule";
+      if (timeDifference != 0) {
+        return Math.abs(timeDifference) + minuteStr + delayType;
+      }
+      return "On schedule";
     },
 
     fetchStopListingDataSet: function() {
@@ -188,7 +209,9 @@ export default {
   justify-content: center;
   padding: 0 50px;
   .bus-item {
-    background-color: $primary-color;
+    background-color: rgb(12, 78, 138);
+    color: white;
+    font-weight: 500;
     padding: 20px;
     margin: 10px;
     border-radius: 8px;
