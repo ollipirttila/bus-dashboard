@@ -67,7 +67,7 @@ import { dateTimeMixin } from "@/mixins/dateTime.js";
 export default {
   name: "Home",
   components: {
-    HeaderBar
+    HeaderBar,
   },
   data() {
     return {
@@ -76,7 +76,7 @@ export default {
       stopShortCodeInput: "",
       searchPhrase: null,
       searchResults: "",
-      selectedStop: null
+      selectedStop: null,
     };
   },
   mounted: function() {
@@ -87,10 +87,10 @@ export default {
     fetchStopMonitoringDataSet: function() {
       const stopShortCode = this.stopShortCodeInput;
       const baseURI =
-        "http://data.itsfactory.fi/journeys/api/1/stop-monitoring";
+        "https://data.itsfactory.fi/journeys/api/1/stop-monitoring";
       this.$http
         .get(baseURI, { params: { stops: stopShortCode } })
-        .then(result => {
+        .then((result) => {
           this.busDataSet = result.data.body[stopShortCode];
           console.log(result.data.body[stopShortCode]);
         });
@@ -110,8 +110,8 @@ export default {
     },
 
     fetchStopListingDataSet: function() {
-      const baseURI = "http://data.itsfactory.fi/journeys/api/1/stop-points";
-      this.$http.get(baseURI).then(result => {
+      const baseURI = "https://data.itsfactory.fi/journeys/api/1/stop-points";
+      this.$http.get(baseURI).then((result) => {
         this.stopDataSet = result.data.body;
         console.log(result.data.body);
       });
@@ -119,7 +119,7 @@ export default {
 
     searchStop: function() {
       this.searchResults = this.stopDataSet.filter(
-        item =>
+        (item) =>
           item.name.toLowerCase().search(this.searchPhrase.toLowerCase()) !== -1
       );
       console.log(this.searchResults);
@@ -140,10 +140,10 @@ export default {
       }
     },
     getStopName(shortName) {
-      let stop = this.stopDataSet.filter(item => item.shortName == shortName);
+      let stop = this.stopDataSet.filter((item) => item.shortName == shortName);
       return stop[0].name;
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
