@@ -84,7 +84,7 @@ export default {
   },
   mixins: [dateTimeMixin],
   methods: {
-    fetchStopMonitoringDataSet: function() {
+    fetchStopMonitoringDataSet() {
       const stopShortCode = this.stopShortCodeInput;
       const baseURI =
         "https://data.itsfactory.fi/journeys/api/1/stop-monitoring";
@@ -95,7 +95,7 @@ export default {
           console.log(result.data.body[stopShortCode]);
         });
     },
-    differenceFromScheduledDeparture: function(expectedTime, scheduledTime) {
+    differenceFromScheduledDeparture(expectedTime, scheduledTime) {
       const timeDifference = this.getDifferenceInTime(
         expectedTime,
         scheduledTime
@@ -109,7 +109,7 @@ export default {
       return "On schedule";
     },
 
-    fetchStopListingDataSet: function() {
+    fetchStopListingDataSet() {
       const baseURI = "https://data.itsfactory.fi/journeys/api/1/stop-points";
       this.$http.get(baseURI).then((result) => {
         this.stopDataSet = result.data.body;
@@ -117,17 +117,17 @@ export default {
       });
     },
 
-    searchStop: function() {
+    searchStop() {
       this.searchResults = this.stopDataSet.filter(
         (item) =>
           item.name.toLowerCase().search(this.searchPhrase.toLowerCase()) !== -1
       );
       console.log(this.searchResults);
     },
-    clearResults: function() {
+    clearResults() {
       this.searchResults = null;
     },
-    selectStop: function(stopItem) {
+    selectStop(stopItem) {
       if (stopItem) {
         this.stopShortCodeInput = stopItem.shortName;
         this.selectedStop = stopItem;
