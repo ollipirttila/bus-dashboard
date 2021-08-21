@@ -3,15 +3,20 @@
     <img class="app-logo" alt="busLogo" src="../assets/logo.png" />
     <HeaderBar title="Bus Dashboard" />
     <div class="bus-functions">
-      <div v-if="selectedStop" class="selected-stop">
-        Selected stop: {{ selectedStop.name }} - {{ selectedStop.shortName }}
+      <div v-if="getSelectedStopItem" class="selected-stop">
+        Selected stop: {{ getSelectedStopItem.name }} -
+        {{ getSelectedStopItem.shortName }}
         <div class="remove-stop-icon" @click="selectStop()">
           <i class="fas fa-times fa-lg" />
         </div>
       </div>
     </div>
     <div class="bus-container">
-      <div v-for="item in busDataSet" :key="item.vehicleRef" class="bus-item">
+      <div
+        v-for="item in getStopMonitoringData"
+        :key="item.vehicleRef"
+        class="bus-item"
+      >
         <div class="bus-line">
           {{ item.lineRef }} {{ getStopName(item.destinationShortName) }}
         </div>
@@ -35,7 +40,7 @@
       </div>
     </div>
 
-    <div v-if="!selectedStop" class="search-functions">
+    <div v-if="!getSelectedStopItem" class="search-functions">
       <div class="search-title">Search for your bus stop</div>
       <input
         class="search-input"
@@ -60,9 +65,9 @@
 </template>
 
 <script>
-// @ is an alias to /src
 import HeaderBar from "@/components/HeaderBar.vue";
 import { dateTimeMixin } from "@/mixins/dateTime.js";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "Home",
@@ -71,30 +76,16 @@ export default {
   },
   data() {
     return {
-      busDataSet: null,
-      stopDataSet: [],
       stopShortCodeInput: "",
       searchPhrase: null,
       searchResults: "",
-      selectedStop: null,
     };
   },
   mounted: function() {
-    this.fetchStopListingDataSet();
+    this.fetchStopData();
   },
   mixins: [dateTimeMixin],
   methods: {
-    fetchStopMonitoringDataSet() {
-      const stopShortCode = this.stopShortCodeInput;
-      const baseURI =
-        "https://data.itsfactory.fi/journeys/api/1/stop-monitoring";
-      this.$http
-        .get(baseURI, { params: { stops: stopShortCode } })
-        .then((result) => {
-          this.busDataSet = result.data.body[stopShortCode];
-          console.log(result.data.body[stopShortCode]);
-        });
-    },
     differenceFromScheduledDeparture(expectedTime, scheduledTime) {
       const timeDifference = this.getDifferenceInTime(
         expectedTime,
@@ -108,41 +99,44 @@ export default {
       }
       return "On schedule";
     },
-
-    fetchStopListingDataSet() {
-      const baseURI = "https://data.itsfactory.fi/journeys/api/1/stop-points";
-      this.$http.get(baseURI).then((result) => {
-        this.stopDataSet = result.data.body;
-        console.log(result.data.body);
-      });
-    },
+    ...mapActions([
+      "fetchStopData",
+      "fetchStopMonitoringData",
+      "resetStopMonitoringData",
+      "setSelectedStopItem",
+    ]),
 
     searchStop() {
-      this.searchResults = this.stopDataSet.filter(
+      this.searchResults = this.getStopData.filter(
         (item) =>
           item.name.toLowerCase().search(this.searchPhrase.toLowerCase()) !== -1
       );
-      console.log(this.searchResults);
     },
     clearResults() {
       this.searchResults = null;
     },
     selectStop(stopItem) {
       if (stopItem) {
-        this.stopShortCodeInput = stopItem.shortName;
-        this.selectedStop = stopItem;
-        this.fetchStopMonitoringDataSet();
+        this.setSelectedStopItem(stopItem);
+        this.fetchStopMonitoringData();
         this.clearResults;
         this.searchPhrase = null;
       } else {
-        this.selectedStop = null;
-        this.busDataSet = null;
+        this.setSelectedStopItem(null);
+        this.resetStopMonitoringData();
       }
     },
     getStopName(shortName) {
-      let stop = this.stopDataSet.filter((item) => item.shortName == shortName);
+      let stop = this.getStopData.filter((item) => item.shortName == shortName);
       return stop[0].name;
     },
+  },
+  computed: {
+    ...mapGetters([
+      "getStopData",
+      "getStopMonitoringData",
+      "getSelectedStopItem",
+    ]),
   },
 };
 </script>
