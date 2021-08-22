@@ -9,9 +9,6 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home,
-    params: {
-      stop: 0,
-    },
   },
   {
     path: "/about",
@@ -31,7 +28,6 @@ const routes = [
 ];
 
 const router = new VueRouter({
-  mode: "history",
   routes,
 });
 
