@@ -6,7 +6,7 @@
       <div v-if="getSelectedStopItem" class="selected-stop">
         Selected stop: {{ getSelectedStopItem.name }} -
         {{ getSelectedStopItem.shortName }}
-        <div class="remove-stop-icon" @click="selectStop()">
+        <div class="remove-stop-icon" @click="resetSelectedStopItem()">
           <i class="fas fa-times fa-lg" />
         </div>
       </div>
@@ -82,7 +82,20 @@ export default {
     };
   },
   mounted: function() {
-    this.fetchStopData();
+    //TODO: This is ugly. Maybe just 1 dedicated action to initialize data?
+    //query params can also be accessed from the store module.
+    this.setSelectedStopItemByShortName(
+      this.$route.query.stop === undefined ? 0 : this.$route.query.stop
+    );
+    this.fetchStopMonitoringData(
+      this.$route.query.stop === undefined ? 0 : this.$route.query.stop
+    );
+  },
+  watch: {
+    "$route.query.stop"() {
+      this.setSelectedStopItemByShortName(this.$route.query.stop);
+      this.fetchStopMonitoringData(this.$route.query.stop);
+    },
   },
   mixins: [dateTimeMixin],
   methods: {
@@ -104,6 +117,8 @@ export default {
       "fetchStopMonitoringData",
       "resetStopMonitoringData",
       "setSelectedStopItem",
+      "resetSelectedStopItem",
+      "setSelectedStopItemByShortName",
     ]),
 
     searchStop() {
@@ -127,6 +142,10 @@ export default {
       }
     },
     getStopName(shortName) {
+      // TODO: When page gets refreshed, this gets triggered once per bus item while
+      // stopdata is still empty. After that twice while there is stopdata.
+      // So there's redundant triggering and stopdata is not initialized for the first
+      // render.
       let stop = this.getStopData.filter((item) => item.shortName == shortName);
       return stop[0].name;
     },

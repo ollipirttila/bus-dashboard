@@ -1,10 +1,11 @@
 import axios from "axios";
+import router from "../router";
 
 const busStopModule = {
   state: {
     stopDataSet: [],
     stopMonitoringData: [],
-    selectedStopItem: null,
+    selectedStopItem: { shortName: 0 },
   },
   getters: {
     getStopData: (state) => {
@@ -25,14 +26,17 @@ const busStopModule = {
           state.stopDataSet = result.data.body;
         });
     },
-    fetchStopMonitoringData(state) {
+    fetchStopMonitoringData(state, stopShortName) {
       axios
         .get("https://data.itsfactory.fi/journeys/api/1/stop-monitoring", {
-          params: { stops: state.selectedStopItem.shortName },
+          params: {
+            stops: stopShortName
+              ? stopShortName
+              : state.selectedStopItem.shortName,
+          },
         })
         .then((result) => {
-          state.stopMonitoringData =
-            result.data.body[state.selectedStopItem.shortName];
+          state.stopMonitoringData = result.data.body[stopShortName];
         });
     },
     resetStopMonitoringData(state) {
@@ -40,20 +44,50 @@ const busStopModule = {
     },
     setSelectedStopItem(state, stopItem) {
       state.selectedStopItem = stopItem;
+      router.push({
+        path: "",
+        query: { stop: stopItem ? stopItem.shortName : 0 },
+      });
+    },
+    resetSelectedStopItem(state) {
+      state.selectedStopItem = null;
+      state.stopMonitoringData = null;
+      router.push({
+        path: "",
+        query: { stop: 0 },
+      });
+    },
+    setSelectedStopItemByShortName(state, shortNameInput) {
+      axios
+        .get("https://data.itsfactory.fi/journeys/api/1/stop-points")
+        .then((result) => {
+          let stopDataSet = result.data.body;
+          let stopItem = stopDataSet.find(
+            (item) => item.shortName == shortNameInput
+          );
+          state.selectedStopItem = stopItem;
+        });
     },
   },
   actions: {
     fetchStopData(context) {
       context.commit("fetchStopData");
     },
-    fetchStopMonitoringData(context) {
-      context.commit("fetchStopMonitoringData");
+    fetchStopMonitoringData(context, stopShortName) {
+      context.commit("fetchStopMonitoringData", stopShortName);
     },
     resetStopMonitoringData(context) {
       context.commit("resetStopMonitoringData");
     },
     setSelectedStopItem(context, stopItem) {
       context.commit("setSelectedStopItem", stopItem);
+    },
+    resetSelectedStopItem(context) {
+      context.commit("resetSelectedStopItem");
+    },
+    setSelectedStopItemByShortName(context, shortNameInput) {
+      context.commit("fetchStopData");
+      context.commit("setSelectedStopItemByShortName", shortNameInput);
     },
   },
 };
