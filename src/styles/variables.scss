@@ -1,5 +1,12 @@
 $primary-color: rgb(87, 182, 82);
 
+// Breakpoints
+$breakpoint-mobile: 500px;
+$breakpoint-tablet: 650px;
+$breakpoint-narrow-desktop: 900px;
+$breakpoint-wide-desktop: 1400px;
+
+
 :export {
   primarycolor: $primary-color;
 }

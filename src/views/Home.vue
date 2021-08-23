@@ -163,8 +163,8 @@ export default {
 @import "../styles/variables.scss";
 .home {
   .app-logo {
-    width: 150px;
-    padding-bottom: 20px;
+    width: 100px;
+    margin: 15px 0;
   }
   button {
     background-color: $primary-color;
@@ -193,7 +193,7 @@ export default {
     background-color: rgb(12, 78, 138);
     color: white;
     font-weight: 700;
-    width: 30%;
+    width: 80%;
     padding: 10px;
     margin: 15px;
     border-radius: 8px;
@@ -268,6 +268,12 @@ export default {
       background-color: rgb(179, 192, 65);
       cursor: pointer;
     }
+  }
+}
+@media only screen and (max-width: $breakpoint-narrow-desktop) {
+  .app-logo {
+    max-width: 20%;
+    height: auto;
   }
 }
 </style>
