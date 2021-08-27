@@ -19,6 +19,27 @@ const busStopModule = {
     },
   },
   mutations: {
+    initializeAppState(state, UrlStopQuery) {
+      //Get array of all bus stop items
+      axios
+        .get("https://data.itsfactory.fi/journeys/api/1/stop-points")
+        .then((result) => {
+          state.stopDataSet = result.data.body;
+          state.selectedStopItem = result.data.body.find(
+            (item) => item.shortName == UrlStopQuery
+          );
+          //Get monitoring data for bus stop indicated by URL parameter
+          axios
+            .get("https://data.itsfactory.fi/journeys/api/1/stop-monitoring", {
+              params: {
+                stops: UrlStopQuery,
+              },
+            })
+            .then((result) => {
+              state.stopMonitoringData = result.data.body[UrlStopQuery];
+            });
+        });
+    },
     fetchStopData(state) {
       axios
         .get("https://data.itsfactory.fi/journeys/api/1/stop-points")
@@ -50,26 +71,23 @@ const busStopModule = {
       });
     },
     resetSelectedStopItem(state) {
-      state.selectedStopItem = null;
-      state.stopMonitoringData = null;
+      state.selectedStopItem = { shortName: 0 };
+      state.stopMonitoringData = [];
       router.push({
         path: "",
         query: { stop: 0 },
       });
     },
     setSelectedStopItemByShortName(state, shortNameInput) {
-      axios
-        .get("https://data.itsfactory.fi/journeys/api/1/stop-points")
-        .then((result) => {
-          let stopDataSet = result.data.body;
-          let stopItem = stopDataSet.find(
-            (item) => item.shortName == shortNameInput
-          );
-          state.selectedStopItem = stopItem;
-        });
+      state.selectedStopItem = state.stopDataSet.find(
+        (item) => item.shortName == shortNameInput
+      );
     },
   },
   actions: {
+    initializeAppState(context, UrlStopQuery) {
+      context.commit("initializeAppState", UrlStopQuery);
+    },
     fetchStopData(context) {
       context.commit("fetchStopData");
     },
@@ -86,7 +104,6 @@ const busStopModule = {
       context.commit("resetSelectedStopItem");
     },
     setSelectedStopItemByShortName(context, shortNameInput) {
-      context.commit("fetchStopData");
       context.commit("setSelectedStopItemByShortName", shortNameInput);
     },
   },

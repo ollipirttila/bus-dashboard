@@ -82,17 +82,15 @@ export default {
     };
   },
   mounted: function() {
-    //TODO: This is ugly. Maybe just 1 dedicated action to initialize data?
-    //query params can also be accessed from the store module.
-    this.setSelectedStopItemByShortName(
-      this.$route.query.stop === undefined ? 0 : this.$route.query.stop
-    );
-    this.fetchStopMonitoringData(
+    console.log(this.$route.query.stop);
+    this.initializeAppState(
       this.$route.query.stop === undefined ? 0 : this.$route.query.stop
     );
   },
   watch: {
     "$route.query.stop"() {
+      // TODO: this gets triggered redundantly when user uses the UI to select stop also
+      // Find a way to trigger it only, when the url parameter is changed by hand?
       this.setSelectedStopItemByShortName(this.$route.query.stop);
       this.fetchStopMonitoringData(this.$route.query.stop);
     },
@@ -113,6 +111,7 @@ export default {
       return "On schedule";
     },
     ...mapActions([
+      "initializeAppState",
       "fetchStopData",
       "fetchStopMonitoringData",
       "resetStopMonitoringData",
@@ -137,7 +136,7 @@ export default {
         this.clearResults;
         this.searchPhrase = null;
       } else {
-        this.setSelectedStopItem(null);
+        this.setSelectedStopItem({ shortName: 0 });
         this.resetStopMonitoringData();
       }
     },

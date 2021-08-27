@@ -1,5 +1,7 @@
 import router from "../router";
 
+// This is not used yet.
+
 const loginModule = {
   state: {
     isLogged: false,
