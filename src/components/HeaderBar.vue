@@ -1,5 +1,6 @@
 <template>
-  <div class="hello">
+  <div class="header-bar">
+    <font-awesome-icon class="header-icon" icon="bus" size="2x" />
     <h1>{{ title }}</h1>
   </div>
 </template>
@@ -8,8 +9,8 @@
 export default {
   name: "HeaderBar",
   props: {
-    title: String
-  }
+    title: String,
+  },
 };
 </script>
 
@@ -17,12 +18,15 @@ export default {
 <style scoped lang="scss">
 @import "../styles/variables.scss";
 
-.hello {
+.header-bar {
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: $primary-color;
   height: 60px;
   margin: 0 auto;
+  .header-icon {
+    margin: 0 20px 0 20px;
+  }
 }
 </style>

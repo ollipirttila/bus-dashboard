@@ -1,7 +1,5 @@
 <template>
   <div class="home">
-    <img class="app-logo" alt="busLogo" src="../assets/logo.png" />
-    <HeaderBar title="Bus Dashboard" />
     <div class="bus-functions">
       <div v-if="getSelectedStopItem" class="selected-stop">
         Selected stop: {{ getSelectedStopItem.name }} -
@@ -57,23 +55,21 @@
         class="stop-item"
         @click="selectStop(item)"
       >
+        <img src="../assets/bus-stop.svg" class="stop-item-logo" />
         <div class="stop-name">{{ item.name }}</div>
-        <div class="stop-shortname">{{ item.shortName }}</div>
+        <div class="stop-shortname">nro {{ item.shortName }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import HeaderBar from "@/components/HeaderBar.vue";
 import { dateTimeMixin } from "@/mixins/dateTime.js";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "Home",
-  components: {
-    HeaderBar,
-  },
+  components: {},
   data() {
     return {
       stopShortCodeInput: "",
@@ -161,10 +157,8 @@ export default {
 <style lang="scss" scoped>
 @import "../styles/variables.scss";
 .home {
-  .app-logo {
-    width: 100px;
-    margin: 15px 0;
-  }
+  margin-top: 5px;
+  height: 100vh;
   button {
     background-color: $primary-color;
     padding: 10px;
@@ -192,7 +186,7 @@ export default {
     background-color: rgb(12, 78, 138);
     color: white;
     font-weight: 700;
-    width: 80%;
+    width: 30%;
     padding: 10px;
     margin: 15px;
     border-radius: 8px;
@@ -255,24 +249,49 @@ export default {
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
-  align-items: center;
-  background-color: rgb(200, 211, 207);
+  align-items: flex-start;
   .stop-item {
-    background-color: rgb(231, 243, 118);
+    background-color: $bus-yellow;
     width: 500px;
-    padding: 5px;
     margin: 5px;
     text-align: center;
+    text-transform: uppercase;
     &:hover {
-      background-color: rgb(179, 192, 65);
       cursor: pointer;
+      box-shadow: 2px 5px 10px -2px $black;
+    }
+    .stop-item-logo {
+      /* flip horizontally */
+      transform: scaleX(-1);
+      height: 60px;
+      padding: 5px 0 0 0;
+    }
+    .stop-name,
+    .stop-shortname {
+      background-color: $black;
+      color: $dirty-white;
+    }
+    .stop-name {
+      padding-top: 5px;
+    }
+    .stop-shortname {
+      padding-bottom: 5px;
+      font-size: $font-size-small;
     }
   }
 }
+// Styles specific only to small screens
 @media only screen and (max-width: $breakpoint-narrow-desktop) {
-  .app-logo {
-    max-width: 20%;
-    height: auto;
+  .bus-functions {
+    .selected-stop {
+      width: 80%;
+    }
+  }
+}
+// Styles specific only to desktop screen sizes
+@media only screen and (min-width: $breakpoint-narrow-desktop) {
+  .home {
+    margin-top: 10px;
   }
 }
 </style>

@@ -1,10 +1,20 @@
 <template>
   <div id="app">
+    <HeaderBar class="header-bar" title="Bus Dashboard" />
     <router-view />
   </div>
 </template>
 
+<script>
+import HeaderBar from "@/components/HeaderBar.vue";
+export default {
+  name: "Home",
+  components: { HeaderBar },
+};
+</script>
+
 <style lang="scss">
+@import "./styles/variables.scss";
 body {
   margin: 0;
 }
