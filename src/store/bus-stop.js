@@ -5,7 +5,7 @@ const busStopModule = {
   state: {
     stopDataSet: [],
     stopMonitoringData: [],
-    selectedStopItem: { shortName: 0 },
+    selectedStopItem: null,
   },
   getters: {
     getStopData: (state) => {
