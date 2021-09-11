@@ -86,7 +86,9 @@ export default {
   watch: {
     "$route.query.stop"() {
       // TODO: this gets triggered redundantly when user uses the UI to select stop also
-      // Find a way to trigger it only, when the url parameter is changed by hand?
+      // make it so that fetching stop monitoring data is always triggered by pushing
+      // URL parameters. So if I manually change URL parameters, or change it by using UI,
+      // i.e. pushing parameters to router, it triggers stop monitoring fetching only after that.
       this.setSelectedStopItemByShortName(this.$route.query.stop);
       this.fetchStopMonitoringData(this.$route.query.stop);
     },
@@ -128,7 +130,6 @@ export default {
     selectStop(stopItem) {
       if (stopItem) {
         this.setSelectedStopItem(stopItem);
-        this.fetchStopMonitoringData();
         this.clearResults;
         this.searchPhrase = null;
       } else {
@@ -137,10 +138,6 @@ export default {
       }
     },
     getStopName(shortName) {
-      // TODO: When page gets refreshed, this gets triggered once per bus item while
-      // stopdata is still empty. After that twice while there is stopdata.
-      // So there's redundant triggering and stopdata is not initialized for the first
-      // render.
       let stop = this.getStopData.filter((item) => item.shortName == shortName);
       return stop[0].name;
     },
